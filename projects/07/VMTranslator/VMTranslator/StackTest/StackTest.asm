@@ -1,0 +1,12 @@
+@17
+D=A
+@SP
+M=D
+@SP
+M=M+1
+@17
+D=A
+@SP
+M=D
+@SP
+M=M+1

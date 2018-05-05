@@ -664,25 +664,25 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Playe\\.nuget\\packages\\": {},
+    "C:\\Users\\Sumner\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackagesFallback\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Playe\\OneDrive\\Documents\\School\\spring2018\\nand2tetris\\projects\\07\\VMTranslator\\VMTranslator\\VMTranslator.csproj",
+      "projectUniqueName": "C:\\Users\\Sumner\\Documents\\School\\Spring2018\\nand2tetris\\projects\\07\\VMTranslator\\VMTranslator\\VMTranslator.csproj",
       "projectName": "VMTranslator",
-      "projectPath": "C:\\Users\\Playe\\OneDrive\\Documents\\School\\spring2018\\nand2tetris\\projects\\07\\VMTranslator\\VMTranslator\\VMTranslator.csproj",
-      "packagesPath": "C:\\Users\\Playe\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Playe\\OneDrive\\Documents\\School\\spring2018\\nand2tetris\\projects\\07\\VMTranslator\\VMTranslator\\obj\\",
+      "projectPath": "C:\\Users\\Sumner\\Documents\\School\\Spring2018\\nand2tetris\\projects\\07\\VMTranslator\\VMTranslator\\VMTranslator.csproj",
+      "packagesPath": "C:\\Users\\Sumner\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Sumner\\Documents\\School\\Spring2018\\nand2tetris\\projects\\07\\VMTranslator\\VMTranslator\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackagesFallback\\",
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\Playe\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Sumner\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.Fallback.config"
       ],

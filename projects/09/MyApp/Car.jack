@@ -1,0 +1,91 @@
+class Car {
+	static int NUMCARS = 0;
+	
+	field string make, color, drive, model;
+	field int year, doors;
+	
+	constructor Car new(string newMake, string newModel, string newColor, string newDrive, int newYear, int newDoors) {
+		let make = newMake;
+		let model = newModel;
+		let color = newColor;
+		let drive = newDrive;
+		let year = newYear;
+		let doors = newDoors;
+		
+		let NUMCARS = NUMCARS + 1;
+		
+		return this;
+	}
+	
+	method void Set(string newMake, string newModel, string newColor, string newDrive, int newYear, int newDoors) {
+		let make = newMake;
+		let model = newModel;
+		let color = newColor;
+		let drive = newDrive;
+		let year = newYear;
+		let doors = newDoors;
+		
+		return;
+	}
+	
+	method string GetMake() {
+		return make;
+	}
+	
+	method string GetModel() {
+		return model;
+	}
+	
+	method string GetColor() {
+		return color;
+	}
+	
+	method string GetDrive() {
+		return drive;
+	}
+	
+	method int GetYear() {
+		return year;
+	}
+	
+	method int GetDoors() {
+		return doors;
+	}
+	
+	method void Delete() {
+		do Memory.deAlloc(this);
+		
+		let NUMCARS = NUMCARS - 1;
+		
+		return;
+	}
+	
+	method void PrintCar() {
+		do Output.printString("Make: ");
+		do Output.printString(make);
+		do Output.printString("\n");
+		
+		do Output.printString("Model: ");
+		do Output.printString(model);
+		do Output.printString("\n");
+		
+		do Output.printString("Year: ");
+		do Output.printString(year);
+		do Output.printString("\n");
+		
+		do Output.printString("Color: ");
+		do Output.printString(color);
+		do Output.printString("\n");
+		
+		do Output.printString("Drive: ");
+		do Output.printString(drive);
+		do Output.printString("\n");
+		
+		do Output.printString("Doors: ");
+		do Output.printString(doors);
+		do Output.printString("\n");
+		
+		do Output.println();	
+		return;
+	}
+}

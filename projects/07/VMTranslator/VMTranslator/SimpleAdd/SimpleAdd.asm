@@ -1,0 +1,12 @@
+@7
+D=A
+@SP
+M=D
+@SP
+M=M+1
+@8
+D=A
+@SP
+M=D
+@SP
+M=M+1

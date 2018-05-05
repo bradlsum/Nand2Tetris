@@ -1,0 +1,45 @@
+class Main {
+   function void main() {
+		var Car newCar;
+		var string make, color, drive, model;
+		var int year, doors;
+		var bool running;
+		var string c;
+		
+		do Memory.init();
+		do Math.init();
+		do Screen.init();
+		do Output.init();
+		do Keyboard.init();
+		
+		let newCar = Car.new("Ford", "Focus", "Blue", "2WD", 2008, 2);
+		let running = true;
+		
+		do Output.moveCursor(0,0);
+		do Screen.clearScreen;
+		do Output.printString("Car class\n");
+		do Car.PrintCar();
+		
+		while(running) {
+			let make = Keyboard.readLine("Enter new make: ");
+			let model = Keyboard.readLine("Enter new model: ");
+			let year = Keyboard.readInt("Enter new year: ");
+			let color = Keyboard.readLine("Enter new color: ");
+			let drive = Keyboard.readLine("Enter new drive: ");
+			let year = Keyboard.readInt("Enter new door count: ");
+			
+			do newCar.Set(make, model, color, drive, year, doors);
+			
+			do Output.moveCursor(0,0);
+			do Screen.clearScreen();
+			do Output.printString("Car class\n");
+			do Car.PrintCar();
+			
+			let c = Keyboard.readLine("Continue?(y/n): ");
+			if (c = "n") {
+				let running = false;
+			}
+		}
+      return;
+   }
+}
