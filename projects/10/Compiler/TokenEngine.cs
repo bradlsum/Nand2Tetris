@@ -36,7 +36,16 @@ namespace Jack_Compiler
             "true",
             "false",
             "null",
-            "this"
+            "this",
+            "string"
+        };
+
+        private static List<string> types = new List<string>()
+        {
+            "int",
+            "char",
+            "boolean",
+            "string"
         };
 
         private static List<string> operators = new List<string>()
@@ -182,6 +191,30 @@ namespace Jack_Compiler
             else
             {
                 return -128000;
+            }
+        }
+
+        public bool IsType()
+        {
+            if (types.Contains(tokenList[currentTokenIndex]))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public string GetTypeVal()
+        {
+            if (types.Contains(tokenList[currentTokenIndex]))
+            {
+                return tokenList[currentTokenIndex];
+            }
+            else
+            {
+                return null;
             }
         }
 

@@ -17,8 +17,7 @@ namespace Jack_Compiler
         private static string fileName = "";
         private static string functionName = "";
         private static int indentLevel = 0;
-
-        public static StreamWriter XMLOutFile;
+        
         public static string[] tags;
 
         public static void CompileFolder(string foldername, string filename)
@@ -39,28 +38,19 @@ namespace Jack_Compiler
                 fileName = Path.GetFileName(fileList[count]);
                 fileName = fileName.Split('.')[0];
                 tokenEngine = new TokenEngine(fileLines[count]);
+                CompileClass();
             }
 
             WriteToFile(foldername, filename);
-            Console.Write("Press any key to close the VMTranslator");
+            Console.Write("Press any key to close the Compiler");
             Console.ReadKey();
-        }
-
-        public CompileEngine(string file, StreamWriter VMOutFile, StreamWriter XMLOutFile, bool includeSource, bool tokensOnly)
-        {
-            tokenEngine = new TokenEngine(file);
-            if (XMLOutFile != null)
-            {
-
-            }
         }
 
         private static void WriteToFile(string foldername, string filename)
         {
             string newFile = foldername;
-
-            // This should be VM?
-            newFile += "\\" + filename + ".asm";
+            
+            newFile += "\\" + filename + ".jack";
 
             TextWriter tw = new StreamWriter(newFile);
             for (int i = 0; i < assembledLines.Count; i++)
@@ -75,7 +65,7 @@ namespace Jack_Compiler
 
         }
 
-        public void CompileClass()
+        public static void CompileClass()
         {
             if (writeTokens)
             {
@@ -134,7 +124,7 @@ namespace Jack_Compiler
             }
         }
 
-        public void CompileClassVarDec()
+        public static void CompileClassVarDec()
         {
             CompileType();
             CompileClassName();
@@ -156,101 +146,282 @@ namespace Jack_Compiler
             }
         }
 
-        public void CompileSubroutine()
+        public static void CompileSubroutine()
         {
             OpenXMLTag("subRoutineDec");
             WriteXMLTag();//write the method, function, or constructor call
-            //Expect();
-            if(tokenEngine.GetTokenType() == TokenType.IDENTIFIER)//means we wrote constructor
+            if (Expect(TokenType.IDENTIFIER, false) || Expect(TokenType.KEYWORD, false))
             {
-                WriteXMLTag();//Write the indentifier
-
-            }
-            else if(tokenEngine.GetTokenType() == TokenType.KEYWORD)//return type
-            {
-                WriteXMLTag();
-                if (tokenEngine.GetTokenType() == TokenType.IDENTIFIER)//means we wrote constructor
+                Expect(TokenType.IDENTIFIER, true);//this can throw, the only option is indentifier here
+                CompileParameterlist();
+                CloseXMLTag();//subRoutineDec");
+                OpenXMLTag("subRoutineBody");
+                Expect(TokenType.SYMBOL, "{", true);
+                while(true)
                 {
-                    WriteXMLTag();//Write the indentifier
-                    if(tokenEngine.GetTokenType() == TokenType.SYMBOL && tokenEngine.GetSymbol() == "(")
+                    if(tokenEngine.GetKeyword() == "var")
                     {
-                        WriteXMLTag();
+                        CompileVarDec();
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
-                else
+                bool done = false;
+                OpenXMLTag("statements");
+                while(!done)
                 {
-                    throw new Exception("Expected 'identifier' found: " + tokenEngine.GetUnknown());
+                    if (tokenEngine.currentTokenType == TokenType.KEYWORD)
+                    {
+                        switch (tokenEngine.GetKeyword())
+                        {
+                            case "let":
+                                CompileLet();
+                                break;
+                            case "do":
+                                CompileDo();
+                                break;
+                            case "return":
+                                CompileReturn();
+                                Expect(TokenType.SYMBOL, "}", true);
+                                done = true;
+                                break;
+                            case "if":
+                                CompileIf();
+                                break;
+                            case "while":
+                                CompileWhile();
+                                break;
+                            default:
+                                throw new Exception("Expected 'let', 'do', or 'return' found: " + tokenEngine.GetUnknown());
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Expected KEYWORD found: " + tokenEngine.currentTokenType);
+                    }
                 }
-
+                CloseXMLTag();
             }
             else
             {
                 throw new Exception("Expected 'identifier' or 'keyword' found: " + tokenEngine.GetUnknown());
             }
-
             CloseXMLTag();
         }
 
-        public void CompileParameterlist()
+        public static void CompileInnerSubroutine()
         {
-
+            OpenXMLTag("ifElseOrWhileBody");
+            bool done = false;
+            OpenXMLTag("statements");
+            while (!done)
+            {
+                if (tokenEngine.currentTokenType == TokenType.KEYWORD)
+                {
+                    switch (tokenEngine.GetKeyword())
+                    {
+                        case "let":
+                            CompileLet();
+                            break;
+                        case "do":
+                            CompileDo();
+                            break;
+                        case "if":
+                            CompileIf();
+                            break;
+                        case "while":
+                            CompileWhile();
+                            break;
+                        default:
+                            throw new Exception("Expected 'let', 'do', 'while', or 'if found: " + tokenEngine.GetUnknown());
+                    }
+                }
+                else
+                {
+                    Expect(TokenType.SYMBOL, "}", true);
+                }
+            }
+            CloseXMLTag();
         }
 
-        public void CompileVarDec()
+        public static void CompileParameterlist()
         {
-
+            OpenXMLTag("parameterList");
+            Expect(TokenType.SYMBOL, "(", true);
+            while(true)
+            {
+                if(Expect(TokenType.SYMBOL, ")", false))//This is primarily to check for no args
+                {
+                    break;
+                }
+                else
+                {
+                    Expect(TokenType.KEYWORD, true);//Look for string,bool,int, etc
+                    Expect(TokenType.IDENTIFIER, true);
+                    if(!Expect(TokenType.SYMBOL, ",", false))//Check for ',' to look for more args
+                    {
+                        Expect(TokenType.SYMBOL, ")", true);//If no ',' then we MUST find the end or there is an issue
+                        break;
+                    }
+                }
+            }
+            CloseXMLTag();
         }
 
-        public void CompileStatements()
+        public static void CompileArgList()
         {
-
+            OpenXMLTag("argList");
+            Expect(TokenType.SYMBOL, "(", true);
+            while (true)
+            {
+                if (Expect(TokenType.SYMBOL, ")", false))//This is primarily to check for no args
+                {
+                    break;
+                }
+                else
+                {
+                    if(!Expect(TokenType.IDENTIFIER, false) && !Expect(TokenType.STRING_CONST, false) && !Expect(TokenType.INT_CONST, false))
+                    {
+                        throw new Exception("Expected 'IDENTIFIER' or 'STRING' or 'INT' found: " + tokenEngine.GetUnknown());
+                    }
+                    else//Check for ',' to look for more args
+                    {
+                        if(!Expect(TokenType.SYMBOL, ",", false))
+                        {
+                            Expect(TokenType.SYMBOL, ")", true);//If no ',' then we MUST find the end or there is an issue
+                            break;
+                        }
+                    }
+                }
+            }
+            CloseXMLTag();
         }
 
-        public void CompileDo()
+        public static void CompileVarDec()
         {
-
+            OpenXMLTag("varDec");
+            Expect(TokenType.KEYWORD, "var", true);
+            if(tokenEngine.IsType())
+            {
+                WriteXMLTag();
+                while (true)
+                {
+                    Expect(TokenType.IDENTIFIER, true);//This is primarily to check for no args
+                    if(Expect(TokenType.SYMBOL, ";", false))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Expect(TokenType.SYMBOL, ",", true); //Break if we didnt find a ',' or ';'
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("Expected 'SYMBOL' of type 'TYPE' found: " + tokenEngine.GetUnknown());
+            }
+            CloseXMLTag();
         }
 
-        public void CompileLet()
+        public static void CompileDo()
+        {
+            OpenXMLTag("doStatement");
+            Expect(TokenType.KEYWORD, "do", true);
+            Expect(TokenType.IDENTIFIER, true);
+            Expect(TokenType.SYMBOL, ".", true);
+            Expect(TokenType.IDENTIFIER, true);
+            CompileArgList();
+            CloseXMLTag();
+        }
+
+        public static void CompileLet()
         {
             OpenXMLTag("letStatement");
-            WriteXMLTag();
-            WriteXMLTag();
-            WriteXMLTag();
+            Expect(TokenType.KEYWORD, "let", true);
+            Expect(TokenType.IDENTIFIER, true);
+            Expect(TokenType.SYMBOL, "=", true);
+            CompileExpression(";");
             CloseXMLTag();
         }
 
-        public void CompileWhile()
+        public static void CompileWhile()
         {
-
+            OpenXMLTag("whileLoop");
+            Expect(TokenType.KEYWORD, "while", true);
+            CompileExpression(")");
+            CompileInnerSubroutine();
+            CloseXMLTag();
         }
 
-        public void ComplieReturn()
+        public static void CompileReturn()
         {
-
+            Expect(TokenType.KEYWORD, "return", true);
+            if (!Expect(TokenType.IDENTIFIER, false))
+            {
+                Expect(TokenType.SYMBOL, ";", true);
+            }
         }
 
-        public void CompileIf()
+        public static void CompileIf()
         {
-
+            OpenXMLTag("ifStatement");
+            Expect(TokenType.KEYWORD, "if", true);
+            CompileExpression(")");
+            CompileInnerSubroutine();
+            CloseXMLTag();
+            if(Expect(TokenType.KEYWORD, "else", false))
+            {
+                OpenXMLTag("elseStatement");
+                CompileInnerSubroutine();
+                CloseXMLTag();
+            }
         }
 
-        public void CompileExpression()
+        public static void CompileExpression(string termination)
         {
-
+            OpenXMLTag("expression");
+            bool done = false;
+            Expect(TokenType.SYMBOL, termination, true);//If we immediately have a termination we have an issue
+            while (!done)
+            {
+                OpenXMLTag("term");
+                if (Expect(TokenType.SYMBOL, "(", false))//If we dont have a nested expression
+                {
+                    CompileExpression(")");
+                }
+                else
+                {
+                    //if(Expect())
+                }
+                CloseXMLTag();
+            }
         }
 
         public void CompileTerm()
         {
+            Expect(TokenType.INT_CONST, false);
+            Expect(TokenType.STRING_CONST, false);
+            Expect(TokenType.KEYWORD, false);
+            if (Expect(TokenType.IDENTIFIER, false))
+            {
+                if (Expect(TokenType.SYMBOL, "[", false))
+                    CompileExpression("}");
+            }
+
+            //Expect(TokenType.)
+
 
         }
 
-        public void CompileExpressionList()
+        public static void CompileExpressionList()
         {
 
         }
 
-        public void CompileIdentifier()
+        public static void CompileIdentifier()
         {
             if (tokenEngine.GetTokenType() == TokenType.IDENTIFIER)
             {
@@ -258,7 +429,7 @@ namespace Jack_Compiler
             }
         }
 
-        public void CompileType()
+        public static void CompileType()
         {
             if (tokenEngine.GetKeyword() == "int" || tokenEngine.GetKeyword() == "char" || tokenEngine.GetKeyword() == "boolean" || tokenEngine.GetTokenType() == TokenType.IDENTIFIER)
             {
@@ -266,22 +437,22 @@ namespace Jack_Compiler
             }
         }
 
-        public void CompileClassName()
+        public static void CompileClassName()
         {
             CompileIdentifier();
         }
 
-        public void SubroutineName()
+        public static void SubroutineName()
         {
             CompileIdentifier();
         }
 
-        public void CompileVarName()
+        public static void CompileVarName()
         {
             CompileIdentifier();
         }
 
-        private bool Expect(TokenType type, string value, bool allowThrow)
+        private static bool Expect(TokenType type, string value, bool allowThrow)
         {
             if (tokenEngine.currentTokenType == type)
             {
@@ -398,7 +569,7 @@ namespace Jack_Compiler
             }
         }
 
-        private bool Expect(TokenType type, bool allowThrow)
+        private static bool Expect(TokenType type, bool allowThrow)
         {
             if(tokenEngine.currentTokenType == type)
             {
@@ -418,43 +589,45 @@ namespace Jack_Compiler
             }
         }
 
-        public void Indent()
+        public static string Indent()
         {
+            string temp = "";
             for(int i = 0; i < indentLevel; i++)
             {
-                XMLOutFile.Write('\t');
+                temp += "\t";
             }
+            return temp;
         }
 
-        public void WriteXMLTag()
+        public static void WriteXMLTag()
         {
             if (writeXML == true)
             {
-                Indent();
-                XMLOutFile.Write('<' + tokenEngine.GetTokenType().ToString() + '>' + tokenEngine.GetStringVal() + "</" + tokenEngine.GetTokenType().ToString() + '>' + '\n');
+                string temp = Indent();
+                assembledLines.Add(temp + '<' + tokenEngine.GetTokenType().ToString() + '>' + tokenEngine.GetStringVal() + "</" + tokenEngine.GetTokenType().ToString() + '>' + '\n');
                 tokenEngine.Advance();
             }
         }
 
-        public void OpenXMLTag(string tag)
+        public static void OpenXMLTag(string tag)
         {
             if (writeXML == true)
             {
-                Indent();
-                XMLOutFile.Write('<' + tag + '>' + '\n');
+                string temp = Indent();
+                assembledLines.Add(temp + '<' + tag + '>' + '\n');
                 indentLevel++;
                 tags[indentLevel] = tag;
                 tokenEngine.Advance();
             }
         }
 
-        public void CloseXMLTag()
+        public static void CloseXMLTag()
         {
             if (writeXML == true)
             {
                 indentLevel--;
-                Indent();
-                XMLOutFile.Write("</" + tags[indentLevel+1] + '>' + '\n');
+                string temp = Indent();
+                assembledLines.Add(temp + "</" + tags[indentLevel+1] + '>' + '\n');
             }
         }
     }

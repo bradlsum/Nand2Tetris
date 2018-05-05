@@ -215,6 +215,7 @@ ClientBin/
 ~$*
 *~
 *.dbmdl
+*.zip
 *.dbproj.schemaview
 *.jfm
 *.pfx
